@@ -21,8 +21,8 @@ contract ShipmentService {
     //This function inititates the shipment
     function shipWithPin(address customerAddress, uint pin) public {
         require(msg.sender == manager);
-        require(customerAddress != address(0));
-        require(pin >= 999 && pin < 10000);
+        require(customerAddress != address(0) && customerAddress != manager);
+        require(pin > 999 && pin < 10000);
 
         customersOrders[customerAddress].push() = Order(Status.Dispatched , pin);
     }
@@ -30,20 +30,23 @@ contract ShipmentService {
     //This function acknowlegdes the acceptance of the delivery
     function acceptOrder(uint pin) public {
         require(msg.sender != manager);
-        require(pin >= 999 && pin < 10000);
+        uint count;
         
         uint256 len = customersOrders[msg.sender].length;
         for(uint256 i = 0; i < len; i++){
              Order memory order = customersOrders[msg.sender][i];
              if(order.status == Status.Dispatched && order.pin == pin){
+              count++;   
               customersOrders[msg.sender][i].status = Status.Accepted;
-            }
+              break;
+             }
         }
+        require(count > 0);
     }
 
     //This function outputs the status of the delivery
     function checkStatus(address customerAddress) public view returns (uint){
-        require(msg.sender != manager);
+        require(msg.sender == manager || msg.sender == customerAddress);
         uint256 count;
         uint256 len = customersOrders[customerAddress].length;
         for(uint256 i = 0; i < len;i++){
