@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-contract Bookstore {
+contract BookStore {
     address immutable private owner;
 
     constructor(){
@@ -62,17 +62,14 @@ contract Bookstore {
         string memory author, 
         string memory publication, 
         bool available)  {
+            require(id <= bookId);
             Book memory book = books[id];
-            if(msg.sender == owner){
+            require(msg.sender == owner || book.available);
             (title, author, publication, available) = (book.title, book.author, book.publication, book.available);
-            }else{
-              require(book.available);
-              (title, author, publication, available) = (book.title, book.author, book.publication, book.available);
-            }
         }
 
     modifier onlyOwner(){
-        require(msg.sender == msg.sender);
+        require(msg.sender == owner);
         _;
     } 
 
@@ -82,16 +79,13 @@ contract Bookstore {
         uint[] memory result = new uint[](bookId);
         for(uint256 i = 1; i <= result.length; i++) {
             Book memory book = books[i];
-            if((msg.sender == ownerr && keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("title")) && keccak256(abi.encodePacked(book.title)) == keccak256(abi.encodePacked(value))) ||
-               (msg.sender == ownerr && keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("author")) && keccak256(abi.encodePacked(book.author)) == keccak256(abi.encodePacked(value))) ||
-               (msg.sender == ownerr && keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("publication")) && keccak256(abi.encodePacked(book.publication)) == keccak256(abi.encodePacked(value)))){
-                count++;
+            if(msg.sender == owner || book.available){
+              if(( keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("title")) && keccak256(abi.encodePacked(book.title)) == keccak256(abi.encodePacked(value))) ||
+               (keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("author")) && keccak256(abi.encodePacked(book.author)) == keccak256(abi.encodePacked(value))) ||
+               ( keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("publication")) && keccak256(abi.encodePacked(book.publication)) == keccak256(abi.encodePacked(value)))){
                 result[count] = i;
-               }else if((msg.sender != ownerr && keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("title")) && keccak256(abi.encodePacked(book.title)) == keccak256(abi.encodePacked(value)) && book.available) ||
-               (msg.sender != ownerr && keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("author")) && keccak256(abi.encodePacked(book.author)) == keccak256(abi.encodePacked(value)) && book.available) ||
-               (msg.sender != ownerr && keccak256(abi.encodePacked(field)) == keccak256(abi.encodePacked("publication")) && keccak256(abi.encodePacked(book.publication)) == keccak256(abi.encodePacked(value)) && book.available)) {
                 count++;
-                result[count] = i;
+            }
             }
         }
         assembly {
